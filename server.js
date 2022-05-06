@@ -1,11 +1,10 @@
 const net = require('net');
-const { exit } = require('process');
+const { mainModule } = require('process');
 // const stream = require('stream');
 const config = require('./config.json');
 
 const allUserList = [];
-const allPlayerList = [];
- 
+const playerInGame = [];
 const server = net.createServer(socket => {
     function Menu(socket) {
         socket.write('The game is launched!\r\n'
@@ -14,11 +13,14 @@ const server = net.createServer(socket => {
             + '> ');
     }
 
+    function Game() {
+        socket.on('data', message => {
+            console.log(`Test ${message.toString()}`);
+        });    
+    }
     // function Start(message) {
     //     if ()
     // }
-
-    
     
     const clientInfo = `${socket.remoteAddress}:${socket.remotePort}`;
     allUserList.push(clientInfo);
@@ -30,6 +32,12 @@ const server = net.createServer(socket => {
         console.log(`[M] ${clientInfo}: ${message.toString()}`);
         switch (message.toString().trim()) {
             case '/start':
+                playerInGame.push(clientInfo);
+                // if (clientInfo.length >= 2) {
+                    
+                // }
+                Game();
+                Menu(socket);
                 break;
             case '/list':
                 socket.write('List of IP:PORT of all players:\r\n');
@@ -47,12 +55,8 @@ const server = net.createServer(socket => {
     });
 
     socket.on('close', () => {
-        for (let i = 0; i < allUserList.length; i++) { // for (;;) тому що потпрібен "і" та зупинка циклу в разі знаходження потрібного елементу.
-            if (allUserList[i] === clientInfo) {
-                allUserList.splice(i, 1);
-                break;
-            }
-        }
+        let index = allUserList.indexOf(socket);
+        allUserList.slice(index, 1); 
         console.log(`[-] ${clientInfo} - closed`);
         socket.write('[-] Connection closed.');
     });
@@ -60,3 +64,7 @@ const server = net.createServer(socket => {
 });
 
 server.listen(config.port, config.host);
+
+server.on('listening', () => {
+    console.log('Listening on', server.address());
+});
