@@ -1,7 +1,8 @@
 const net = require('net');
 const config = require('./config.json');
-
-const existingWords = playerList = [];
+ 
+const playerList = [];
+let existingWords = [];
 let gameIsStartMsg = gameIsStart = false;
 let currentMove = 0;
 let lastLetter = 'a';
@@ -17,7 +18,6 @@ const server = net.createServer(socket => {
             socket.write('Waiting for the second player...\r\n');
         }
         else {
-
             gameIsStart = true;
             gameIsStartMsg = true;
         }
@@ -27,12 +27,13 @@ const server = net.createServer(socket => {
     }
 
     if (gameIsStartMsg) {
+        existingWords = [];
+        gameIsStartMsg = false;
         playerList.forEach(client => {
             console.log('[!] Game is start!');
             client.write('Game is start!\r\n');
             client.write(`Start with any word that starts with the letter ${lastLetter}.\r\n`);
         });
-        gameIsStartMsg = false;
     }
 
     socket.on('data', message => {
@@ -51,7 +52,7 @@ const server = net.createServer(socket => {
                         lastLetter = word[word.length - 1];
                         playerList.forEach(client => {
                             if (client !== socket) {
-                                client.write('Your turn!\r\n');
+                                client.write('Your turn!\r\n'.toString());
                             }
                         });
                         currentMove += 1;
